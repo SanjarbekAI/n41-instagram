@@ -75,7 +75,6 @@ class UserModel(AbstractUser, BaseModel):
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            self.is_active = False
             self.clean()
         super(UserModel, self).save(*args, **kwargs)
 
@@ -111,6 +110,7 @@ class ConfirmationModel(BaseModel):
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='verification_codes')
     expiration_time = models.DateField()
     is_confirmed = models.BooleanField(default=False)
+    code = models.CharField(max_length=4, default=0000)
 
     def save(self, *args, **kwargs):
         if not self.pk:
