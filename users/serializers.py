@@ -64,3 +64,49 @@ class SignUpSerializer(serializers.ModelSerializer):
         data = super(SignUpSerializer, self).to_representation(instance)
         data['access_token'] = instance.token()['access_token']
         return data
+
+
+class UpdateUserSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(max_length=255)
+    last_name = serializers.CharField(max_length=255)
+    username = serializers.CharField(max_length=255)
+    password = serializers.CharField(max_length=128, write_only=True)
+    confirm_password = serializers.CharField(max_length=128, write_only=True)
+
+    class Meta:
+        model = UserModel
+        fields = ['first_name', 'last_name', 'username', 'password']
+
+    def validate(self, data):
+        password = data.get('password')
+        confirm_password = data.get('confirm_password')
+
+        if password != confirm_password:
+            response = {
+                "success": False,
+                "message": "Passwords don't match"
+            }
+            raise serializers.ValidationError(response)
+
+        # todo | min 8 length, numbers and letters
+        return data
+
+    def validate_username(self, username):
+        if UserModel.objects.filter(username=username).exists():
+            response = {
+                "success": False,
+                "message": "Username is already gotten"
+            }
+            raise serializers.ValidationError(response)
+        return username
+
+    def update(self, instance, validated_data):
+        instance.username = validated_data.get('username', instance.username)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.password = validated_data.get('password', instance.password)
+
+        if validated_data.get('password'):
+            instance.set_password(validated_data.get('password'))
+            instance.save()
+        return instance
