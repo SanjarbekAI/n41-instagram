@@ -57,7 +57,7 @@ class UserModel(AbstractUser, BaseModel):
             self.username = temp_username
 
     def check_pass(self):
-        if self.password:
+        if not self.password:
             self.password = f"password-{uuid.uuid4()}"
 
     def check_email(self):
