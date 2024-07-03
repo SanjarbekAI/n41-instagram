@@ -183,5 +183,3 @@ class ForgetPasswordView(APIView):
                 "message": "Invalid data"
             }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
-
-
