@@ -43,7 +43,7 @@ class UserModel(AbstractUser, BaseModel):
     avatar = models.ImageField(upload_to='avatars', null=True, blank=True)
 
     def __str__(self):
-        return self.get_full_name()
+        return self.username
 
     @property
     def full_name(self):

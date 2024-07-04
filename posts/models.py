@@ -9,7 +9,7 @@ class PostModel(BaseModel):
     caption = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return self.user.full_name
+        return self.caption
 
     class Meta:
         db_table = 'posts'
@@ -46,7 +46,7 @@ class PostCommentModel(BaseModel):
 
 
 class CommentLikeModel(BaseModel):
-    comment = models.ForeignKey(PostCommentModel, on_delete=models.CASCADE, related_name='comments_likes')
+    comment = models.ForeignKey(PostCommentModel, on_delete=models.CASCADE, related_name='likes')
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='comment_likes')
 
     def __str__(self):
