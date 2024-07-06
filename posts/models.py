@@ -12,6 +12,7 @@ class PostModel(BaseModel):
         return self.caption
 
     class Meta:
+        ordering = ['created_at']
         db_table = 'posts'
         verbose_name = 'post'
         verbose_name_plural = 'posts'
@@ -47,7 +48,7 @@ class PostCommentModel(BaseModel):
 
 class CommentLikeModel(BaseModel):
     comment = models.ForeignKey(PostCommentModel, on_delete=models.CASCADE, related_name='likes')
-    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='comment_likes')
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='likes')
 
     def __str__(self):
         return self.comment.comment
