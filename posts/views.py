@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from posts.models import PostModel, PostCommentModel, PostLikeModel, CommentLikeModel
+from posts.permissions import IsOwner
 from posts.serializers import PostSerializer, CommentSerializer
 from shared.custom_pagination import CustomPagination
 
@@ -16,6 +17,26 @@ class PostListView(generics.ListAPIView):
 
     def get_queryset(self):
         return PostModel.objects.all()
+
+
+class UserPostListView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        return PostModel.objects.filter(user=self.request.user)
+
+
+class UserLikedPostListView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        return PostModel.objects.filter(
+            id__in=PostLikeModel.objects.filter(user=self.request.user).values_list('post_id', flat=True)
+        )
 
 
 class PostCreateAPIView(generics.CreateAPIView):
@@ -89,3 +110,85 @@ class CommentLikeAPIView(APIView):
                 "message": "Successfully liked"
             }
             return Response(response, status=status.HTTP_200_OK)
+
+
+class PostUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsOwner]
+    serializer_class = PostSerializer
+
+    def put(self, request, pk):
+        post = PostModel.objects.filter(pk=pk)
+        if not post.exists():
+            response = {
+                "status": True,
+                "message": "Post does not found",
+            }
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = PostSerializer(post.first(), data=request.data, context={'request': request})
+        if serializer.is_valid():
+            self.check_object_permissions(obj=post.first(), request=request)
+            serializer.save()
+            response = {
+                "status": True,
+                "message": "Successfully updated"
+            }
+            return Response(response, status=status.HTTP_202_ACCEPTED)
+        else:
+            response = {
+                "status": False,
+                "message": "Invalid request",
+                "error": serializer.errors
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommentUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsOwner]
+    serializer_class = CommentSerializer
+
+    def put(self, request, pk):
+        comment = PostCommentModel.objects.filter(pk=pk).first()
+        if not comment:
+            response = {
+                "status": True,
+                "message": "Comment does not found",
+            }
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = CommentSerializer(comment, data=request.data, context={'request': request})
+        if serializer.is_valid():
+            self.check_object_permissions(comment, request)
+            serializer.save()
+            response = {
+                "status": True,
+                "message": "Successfully updated"
+            }
+            return Response(response, status=status.HTTP_202_ACCEPTED)
+        else:
+            response = {
+                "status": False,
+                "message": "Invalid request",
+                "error": serializer.errors
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PostDeleteAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsOwner]
+
+    def delete(self, request, pk):
+        post = PostModel.objects.filter(pk=pk)
+        if not post.first():
+            response = {
+                "status": False,
+                "message": "Post does not found",
+            }
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+        self.check_object_permissions(post.first(), request)
+        post.delete()
+        response = {
+            "status": True,
+            "message": "Successfully deleted"
+        }
+        return Response(response, status=status.HTTP_204_NO_CONTENT)
