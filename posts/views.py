@@ -59,12 +59,14 @@ class PostCommentListView(generics.ListAPIView):
 class PostCommentCreateAPIView(generics.CreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
+    queryset = PostCommentModel.objects.all()
 
     def perform_create(self, serializer):
         if serializer.is_valid():
             print(serializer.validated_data)
         post_id = self.kwargs.get('pk')
         serializer.save(user=self.request.user, post_id=post_id)
+
 
 
 class PostLikeAPIView(APIView):
