@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     # local apps
     'users',
     'posts',
+    'stories',
 ]
 
 MIDDLEWARE = [
