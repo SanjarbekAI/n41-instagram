@@ -1,1 +1,21 @@
-CI/CD haqida reaserch qilib kelish
+upload/
+get/
+view/
+react/
+delete/story_id/
+views/story_id/
+user/ -> userni storylarini olish
+--------------------------------------------------------------------------
+Models:
+
+Story:              user, media, caption, expiry_time, is_active, created_at
+StoryView:          story, user, created_at
+StoryReaction:
+                    REACTION_CHOICES = [
+                        ('like', 'Like'),
+                        ('heart', 'Heart'),
+                    ]
+                    story, user, reaction(choices=REACTION_CHOICES)
+StoryReport:        story, user, reason, created_at
+
+--------------------------------------------------------------------------
